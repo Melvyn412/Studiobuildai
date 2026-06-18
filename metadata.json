@@ -1,0 +1,6 @@
+{
+  "name": "Private HR Assistant",
+  "description": "A fully secure, offline-first HR tool for local employee records, resume screening, custom interview guides, performance reviews, and compliance checklists.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

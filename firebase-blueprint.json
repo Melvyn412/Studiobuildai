@@ -1,0 +1,169 @@
+{
+  "entities": {
+    "Employee": {
+      "title": "Employee Profile",
+      "description": "Secure record of an authorized personnel member stored under tenant workspace guidelines.",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier of the employee record."
+        },
+        "userId": {
+          "type": "string",
+          "description": "Owner administrator user UID representing the multi-tenant isolation bucket."
+        },
+        "firstName": {
+          "type": "string"
+        },
+        "lastName": {
+          "type": "string"
+        },
+        "email": {
+          "type": "string",
+          "format": "email"
+        },
+        "phone": {
+          "type": "string"
+        },
+        "department": {
+          "type": "string"
+        },
+        "role": {
+          "type": "string"
+        },
+        "status": {
+          "type": "string",
+          "enum": ["Active", "Onboarding", "Terminated", "On Leave"]
+        },
+        "startDate": {
+          "type": "string"
+        },
+        "salary": {
+          "type": "number"
+        },
+        "notes": {
+          "type": "string"
+        }
+      },
+      "required": ["id", "userId", "firstName", "lastName", "email", "status"]
+    },
+    "ChecklistItem": {
+      "title": "On-Offboarding Checklist Item",
+      "description": "Compliant checklist item tied to active audits and trackable completions.",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "userId": {
+          "type": "string"
+        },
+        "category": {
+          "type": "string",
+          "enum": ["Onboarding", "Offboarding", "Compliance", "Audit"]
+        },
+        "task": {
+          "type": "string"
+        },
+        "completed": {
+          "type": "boolean"
+        },
+        "notes": {
+          "type": "string"
+        },
+        "completedAt": {
+          "type": "string"
+        }
+      },
+      "required": ["id", "userId", "category", "task", "completed"]
+    },
+    "InterviewTemplate": {
+      "title": "Candidate Evaluation Rubric Guide",
+      "description": "Standardized evaluation blueprint of compliance and skill questions.",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "userId": {
+          "type": "string"
+        },
+        "title": {
+          "type": "string"
+        },
+        "department": {
+          "type": "string"
+        },
+        "seniority": {
+          "type": "string",
+          "enum": ["Junior", "Mid", "Senior", "Lead"]
+        },
+        "questions": {
+          "type": "array",
+          "description": "Serialized questions with verification markers."
+        }
+      },
+      "required": ["id", "userId", "title", "department", "seniority"]
+    },
+    "PerformanceReview": {
+      "title": "Performance Appraisal Review",
+      "description": "Secure assessment record capturing score variables and summaries.",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "userId": {
+          "type": "string"
+        },
+        "employeeId": {
+          "type": "string"
+        },
+        "reviewer": {
+          "type": "string"
+        },
+        "ratingWork": {
+          "type": "number"
+        },
+        "ratingTeam": {
+          "type": "number"
+        },
+        "ratingGrowth": {
+          "type": "number"
+        },
+        "strengths": {
+          "type": "string"
+        },
+        "improvements": {
+          "type": "string"
+        },
+        "goals": {
+          "type": "string"
+        },
+        "submittedAt": {
+          "type": "string"
+        }
+      },
+      "required": ["id", "userId", "employeeId", "reviewer", "ratingWork", "ratingTeam", "ratingGrowth"]
+    }
+  },
+  "firestore": {
+    "/employees/{employeeId}": {
+      "schema": "Employee",
+      "description": "User isolated personnel registry collection."
+    },
+    "/checklists/{checklistId}": {
+      "schema": "ChecklistItem",
+      "description": "Legal checklist operations and certifications collection."
+    },
+    "/templates/{templateId}": {
+      "schema": "InterviewTemplate",
+      "description": "Hiring and screening interview templates collection."
+    },
+    "/reviews/{reviewId}": {
+      "schema": "PerformanceReview",
+      "description": "Annual/semiannual personnel reviews database."
+    }
+  }
+}

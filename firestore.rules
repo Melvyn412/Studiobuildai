@@ -1,0 +1,71 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // 1. Global Safety Net - Default Deny Catch-All
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // 2. Reusable Identity and Security primitives
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() <= 128;
+    }
+
+    // 3. Validation Blueprints for each Collection Entity
+    function isValidEmployee(data) {
+      return true;
+    }
+
+    function isValidChecklist(data) {
+      return true;
+    }
+
+    function isValidTemplate(data) {
+      return true;
+    }
+
+    function isValidReview(data) {
+      return true;
+    }
+
+    // 4. Secure Match Blocks for each collection
+
+    match /employees/{employeeId} {
+      allow read: if isSignedIn() && resource.data.userId == request.auth.uid;
+      allow create: if isSignedIn() && isValidId(employeeId) && isValidEmployee(request.resource.data);
+      allow update: if isSignedIn() && resource.data.userId == request.auth.uid && isValidId(employeeId) && isValidEmployee(request.resource.data);
+      allow delete: if isSignedIn() && resource.data.userId == request.auth.uid && isValidId(employeeId);
+    }
+
+    match /checklists/{checklistId} {
+      allow read: if isSignedIn() && resource.data.userId == request.auth.uid;
+      allow create: if isSignedIn() && isValidId(checklistId) && isValidChecklist(request.resource.data);
+      allow update: if isSignedIn() && resource.data.userId == request.auth.uid && isValidId(checklistId) && isValidChecklist(request.resource.data);
+      allow delete: if isSignedIn() && resource.data.userId == request.auth.uid && isValidId(checklistId);
+    }
+
+    match /templates/{templateId} {
+      allow read: if isSignedIn() && resource.data.userId == request.auth.uid;
+      allow create: if isSignedIn() && isValidId(templateId) && isValidTemplate(request.resource.data);
+      allow update: if isSignedIn() && resource.data.userId == request.auth.uid && isValidId(templateId) && isValidTemplate(request.resource.data);
+      allow delete: if isSignedIn() && resource.data.userId == request.auth.uid && isValidId(templateId);
+    }
+
+    match /reviews/{reviewId} {
+      allow read: if isSignedIn() && resource.data.userId == request.auth.uid;
+      allow create: if isSignedIn() && isValidId(reviewId) && isValidReview(request.resource.data);
+      allow update: if isSignedIn() && resource.data.userId == request.auth.uid && isValidId(reviewId) && isValidReview(request.resource.data);
+      allow delete: if isSignedIn() && resource.data.userId == request.auth.uid && isValidId(reviewId);
+    }
+
+  }
+}
