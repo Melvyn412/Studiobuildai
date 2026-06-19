@@ -181,10 +181,10 @@ export default function LandingPage({ onLoginSuccess, addLog }: LandingPageProps
               ★ v1.2 Isolated Edition
             </span>
             <button
-              onClick={() => document.getElementById('login-pane')?.scrollIntoView({ behavior: 'smooth' })}
+              onClick={handleLocalBypass}
               className="text-xs bg-indigo-600 hover:bg-indigo-500 text-white font-extrabold px-4 py-2 rounded-lg transition-all shadow-md cursor-pointer border border-indigo-500/20 active:scale-95"
             >
-              Sign In
+              Start Console
             </button>
           </div>
         </div>
@@ -269,243 +269,48 @@ export default function LandingPage({ onLoginSuccess, addLog }: LandingPageProps
 
         </div>
 
-        {/* Right Side: Auth Sign In / SignUp Form Panel */}
+        {/* Right Side: Simple Console Connection Option */}
         <div className="lg:col-span-5" id="login-pane">
-          <div className="bg-slate-900 rounded-2xl border-2 border-indigo-500/20 shadow-2xl p-6 sm:p-8 space-y-6 relative overflow-hidden">
+          <div className="bg-slate-900 rounded-2xl border-2 border-indigo-500/20 shadow-2xl p-6 sm:p-8 space-y-6 relative overflow-hidden flex flex-col justify-center min-h-[380px]">
             
-            {/* Form decorative background pattern */}
+            {/* Decorative background pattern */}
             <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-500/5 rounded-full blur-2xl pointer-events-none select-none" />
 
-            {/* Selector tabs between sign in vs sign up */}
-            <div className="flex bg-slate-950 p-1 rounded-lg border border-slate-800">
-              <button
-                type="button"
-                onClick={() => {
-                  setIsSignUp(false);
-                  setError('');
-                }}
-                className={`flex-1 py-2 text-center text-xs font-bold rounded-md transition-all cursor-pointer ${
-                  !isSignUp ? 'bg-indigo-600 text-white' : 'text-slate-400 hover:text-white'
-                }`}
-              >
-                Sign In
-              </button>
-              <button
-                type="button"
-                onClick={() => {
-                  setIsSignUp(true);
-                  setError('');
-                }}
-                className={`flex-1 py-2 text-center text-xs font-bold rounded-md transition-all cursor-pointer ${
-                  isSignUp ? 'bg-indigo-600 text-white' : 'text-slate-400 hover:text-white'
-                }`}
-              >
-                Sign Up
-              </button>
-            </div>
-
-            <div className="text-center space-y-1">
-              <h3 className="text-lg font-black text-white">
-                {isSignUp ? 'Generate Corporate Tenant Workspace' : 'Authorize Console Access'}
+            <div className="space-y-2 text-center sm:text-left">
+              <div className="bg-indigo-950/60 p-3 rounded-xl border border-indigo-900/40 text-indigo-400 w-fit mx-auto sm:mx-0">
+                <ShieldCheck className="w-6 h-6 animate-pulse" />
+              </div>
+              <h3 className="text-xl font-black text-white leading-tight font-sans">
+                HR Workspace Ready
               </h3>
-              <p className="text-xs text-slate-400">
-                {isSignUp 
-                  ? 'Initiate private 256-bit client-thread encryption.' 
-                  : 'Key in compiled credentials to unpack databases.'}
+              <p className="text-xs text-slate-400 leading-relaxed font-sans">
+                Access your HR compliance dashboard instantly. Your private workspace session is pre-configured for direct use. No email signup, passwords, or login details required.
               </p>
             </div>
 
-            {error && (
-              <div className="space-y-3">
-                <div className="bg-red-950/40 text-red-300 border border-red-900/50 p-4 rounded-xl text-xs leading-relaxed text-left">
-                  <div className="font-bold flex items-center gap-1.5 text-red-400 mb-1">
-                    <span>⚠️ Sovereign Shield Sign-in Rejection</span>
-                  </div>
-                  <p>{error}</p>
-                </div>
-
-                {isOperationNotAllowed && (
-                  <div className="bg-slate-950 border border-indigo-500/30 p-4 rounded-xl space-y-3 text-left">
-                    <h4 className="text-[10px] font-black text-indigo-400 uppercase tracking-widest flex items-center gap-1.5">
-                      🗺️ Direct Activation Guide
-                    </h4>
-                    <p className="text-[11px] text-slate-300 leading-relaxed">
-                      This error indicates that <strong>Email/Password</strong> authentication is currently disabled in your Firebase console settings. If Google popped up an "Enable Multi-factor Authentication" window, completion grants permission to activate it below:
-                    </p>
-                    
-                    <a
-                      href={`https://console.firebase.google.com/project/${auth.app.options.projectId}/authentication`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inline-flex w-full items-center justify-center gap-1.5 bg-indigo-600 hover:bg-indigo-500 text-white text-[11px] font-bold py-2 rounded-lg transition-all text-center"
-                    >
-                      Open Firebase Authentication Panel ↗
-                    </a>
-
-                    <div className="text-[10px] text-slate-400 space-y-1.5 pl-2 border-l border-slate-800">
-                      <p><strong>1.</strong> Click the button above to go straight to your Firebase settings.</p>
-                      <p><strong>2.</strong> Click on the <span className="text-indigo-300 font-semibold">"Sign-in method"</span> tab at the top.</p>
-                      <p><strong>3.</strong> Click <span className="text-indigo-300 font-semibold">"Add new provider"</span> (or choose <span className="text-indigo-300 font-semibold">"Email/Password"</span>).</p>
-                      <p><strong>4.</strong> Toggle the switch to <span className="text-indigo-300 font-semibold">"Enable"</span> and click <span className="text-indigo-300 font-semibold">"Save"</span>.</p>
-                    </div>
-
-                    <div className="relative flex py-1.5 items-center">
-                      <div className="flex-grow border-t border-slate-800"></div>
-                      <span className="flex-shrink mx-2 text-[8px] text-slate-500 font-mono tracking-widest uppercase">Alternatively</span>
-                      <div className="flex-grow border-t border-slate-800"></div>
-                    </div>
-
-                    <button
-                      type="button"
-                      onClick={handleLocalBypass}
-                      className="w-full bg-emerald-950/80 hover:bg-emerald-900 text-emerald-300 border border-emerald-900/40 text-xs py-2 rounded-lg font-bold transition-all flex items-center justify-center gap-1 cursor-pointer"
-                    >
-                      ⚡ Bypass and Enter in Local Sandbox Mode
-                    </button>
-                  </div>
-                )}
-              </div>
-            )}
-
-            {success && (
-              <div className="bg-emerald-950/40 text-emerald-300 border border-emerald-900/50 p-3 rounded-lg text-xs leading-relaxed text-left">
-                ✨ {success}
-              </div>
-            )}
-
-            <form onSubmit={handleSubmit} className="space-y-4 text-left">
-              
-              {isSignUp && (
-                <div className="space-y-1.5">
-                  <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Administrator Display Name</label>
-                  <div className="relative">
-                    <input
-                      type="text"
-                      required
-                      placeholder="e.g. Director of Personnel"
-                      value={name}
-                      onChange={(e) => setName(e.target.value)}
-                      className="w-full bg-slate-950 border border-slate-805 rounded-lg py-2 px-3 text-xs text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500 transition-all font-sans"
-                    />
-                  </div>
-                </div>
-              )}
-
-              <div className="space-y-1.5">
-                <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Corporate Email Address</label>
-                <div className="relative">
-                  <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-500">
-                    <Mail className="w-3.5 h-3.5" />
-                  </span>
-                  <input
-                    type="email"
-                    required
-                    placeholder="name@studiobuild.ai"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    className="w-full bg-slate-950 border border-slate-805 rounded-lg py-2 pl-9 pr-3 text-xs text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500 transition-all font-mono"
-                  />
-                </div>
-              </div>
-
-              <div className="space-y-1.5">
-                <div className="flex justify-between items-center">
-                  <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Workspace Password Code</label>
-                  <span className="text-[10px] text-slate-500 font-mono">Encrypted</span>
-                </div>
-                <div className="relative">
-                  <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-500">
-                    <Key className="w-3.5 h-3.5" />
-                  </span>
-                  <input
-                    type="password"
-                    required
-                    placeholder="••••••••"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    className="w-full bg-slate-950 border border-slate-805 rounded-lg py-2 pl-9 pr-3 text-xs text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500 transition-all font-mono"
-                  />
-                </div>
-              </div>
-
+            <div className="space-y-4">
               <button
-                type="submit"
-                disabled={isLoading}
-                className="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-extrabold text-xs py-2.5 rounded-lg transition-all flex items-center justify-center gap-2 cursor-pointer shadow-md mt-6 active:scale-95"
+                onClick={handleLocalBypass}
+                className="w-full bg-gradient-to-r from-indigo-600 to-indigo-500 hover:from-indigo-500 hover:to-indigo-400 text-white font-extrabold text-sm py-4 rounded-xl transition-all flex items-center justify-center gap-2.5 cursor-pointer shadow-lg shadow-indigo-500/10 hover:shadow-indigo-500/20 active:scale-[0.98] border border-indigo-400/20"
               >
-                {isLoading ? (
-                  <span className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent" />
-                ) : (
-                  <>
-                    {isSignUp ? 'Generate Cryptographic Credentials' : 'Authenticate Security Console'}
-                    <ArrowRight className="w-4 h-4 text-indigo-200" />
-                  </>
-                )}
+                <span>Start Application</span>
+                <ArrowRight className="w-4 h-4 text-white" />
               </button>
 
-              <button
-                type="button"
-                onClick={handleGoogleSignIn}
-                disabled={isLoading}
-                className="w-full bg-white hover:bg-slate-100 text-slate-905 font-extrabold text-xs py-2.5 rounded-lg transition-all flex items-center justify-center gap-2 cursor-pointer shadow-md mt-3 border border-slate-200 active:scale-95"
-              >
-                {isLoading ? (
-                  <span className="animate-spin rounded-full h-4 w-4 border-2 border-slate-950 border-t-transparent" />
-                ) : (
-                  <>
-                    <Chrome className="w-4 h-4 text-rose-500" />
-                    Sign in with Google Account
-                  </>
-                )}
-              </button>
-
-              <div className="relative flex py-2 items-center">
-                <div className="flex-grow border-t border-slate-800"></div>
-                <span className="flex-shrink mx-2.5 text-[8px] text-slate-550 font-mono tracking-widest uppercase">Or fast-bypass entrance</span>
-                <div className="flex-grow border-t border-slate-800"></div>
+              <div className="pt-4 flex flex-col gap-2 border-t border-slate-800 text-left">
+                <div className="flex items-center gap-2 text-[11px] text-slate-400">
+                  <Check className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+                  <span>Admin Role: <span className="font-mono text-indigo-300 font-bold">chief@studiobuild.ai</span></span>
+                </div>
+                <div className="flex items-center gap-2 text-[11px] text-slate-400 font-sans">
+                  <Check className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+                  <span>Sandbox Environment: <span className="font-semibold text-slate-300">Isolated & Synced</span></span>
+                </div>
+                <div className="flex items-center gap-2 text-[11px] text-slate-400 font-sans">
+                  <Check className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+                  <span>Storage Model: <span className="font-semibold text-slate-300">Local Cache + Firestore Integration</span></span>
+                </div>
               </div>
-
-              <div className="grid grid-cols-2 gap-3">
-                <button
-                  type="button"
-                  onClick={handleAnonymousSignIn}
-                  disabled={isLoading}
-                  className="bg-slate-950 hover:bg-slate-800 text-indigo-300 border border-slate-800 rounded-lg py-2 text-[10px] font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer active:scale-95"
-                  title="Logs in using Firebase Anonymous Credentials"
-                >
-                  <Users className="w-3.5 h-3.5 text-indigo-400" />
-                  Anonymous Cloud
-                </button>
-                <button
-                  type="button"
-                  onClick={handleLocalBypass}
-                  disabled={isLoading}
-                  className="bg-slate-950 hover:bg-slate-800 text-emerald-300 border border-slate-800 rounded-lg py-2 text-[10px] font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer active:scale-95"
-                  title="Bypasses Firebase Authentication completely and runs beautifully using local state persistence"
-                >
-                  <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
-                  Local Sandbox
-                </button>
-              </div>
-
-            </form>
-
-            {/* Quick Demo Pre-Fill options */}
-            <div className="bg-slate-950/80 p-3.5 rounded-lg border border-slate-850 space-y-2 text-left">
-              <div className="flex justify-between items-center">
-                <span className="text-[9px] uppercase font-bold text-indigo-400 font-mono tracking-wider">⚡ Quick Sandbox Pre-fills</span>
-                <span className="text-[9px] text-indigo-300 font-bold bg-indigo-950/60 px-1.5 py-0.2 rounded border border-indigo-900/50">Demo Credentials</span>
-              </div>
-              <p className="text-[10px] text-slate-400 leading-normal">
-                Want to bypass typing? Inject the secure pre-compiled HR administrator authorization code with a single click.
-              </p>
-              <button
-                type="button"
-                onClick={handlePreFillAdmin}
-                className="w-full bg-slate-900 hover:bg-slate-805 hover:text-white text-indigo-300 border border-slate-800 hover:border-slate-700 font-mono text-[10px] py-1.5 rounded font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer active:scale-95"
-              >
-                Inject Demo Administrator Profile Code 🚀
-              </button>
             </div>
 
           </div>
