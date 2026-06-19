@@ -180,12 +180,12 @@ export default function LandingPage({ onLoginSuccess, addLog }: LandingPageProps
             <span className="text-[10px] bg-emerald-950 text-emerald-400 font-mono font-bold px-2 py-0.5 rounded border border-emerald-900/40 uppercase hidden sm:inline-block">
               ★ v1.2 Isolated Edition
             </span>
-            <a 
-              href="#login-pane" 
-              className="text-xs bg-indigo-950 font-bold hover:bg-indigo-900 text-indigo-300 border border-indigo-900/60 px-3.5 py-1.5 rounded-lg transition-all"
+            <button
+              onClick={() => document.getElementById('login-pane')?.scrollIntoView({ behavior: 'smooth' })}
+              className="text-xs bg-indigo-600 hover:bg-indigo-500 text-white font-extrabold px-4 py-2 rounded-lg transition-all shadow-md cursor-pointer border border-indigo-500/20 active:scale-95"
             >
               Sign In
-            </a>
+            </button>
           </div>
         </div>
       </header>
@@ -317,7 +317,7 @@ export default function LandingPage({ onLoginSuccess, addLog }: LandingPageProps
 
             {error && (
               <div className="space-y-3">
-                <div className="bg-red-950/40 text-red-300 border border-red-900/50 p-4 rounded-xl text-xs leading-relaxed">
+                <div className="bg-red-950/40 text-red-300 border border-red-900/50 p-4 rounded-xl text-xs leading-relaxed text-left">
                   <div className="font-bold flex items-center gap-1.5 text-red-400 mb-1">
                     <span>⚠️ Sovereign Shield Sign-in Rejection</span>
                   </div>
@@ -334,7 +334,7 @@ export default function LandingPage({ onLoginSuccess, addLog }: LandingPageProps
                     </p>
                     
                     <a
-                      href="https://console.firebase.google.com/project/ai-studio-d04719fb-4162-4283-bb43-aca27ca9e802/authentication"
+                      href={`https://console.firebase.google.com/project/${auth.app.options.projectId}/authentication`}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="inline-flex w-full items-center justify-center gap-1.5 bg-indigo-600 hover:bg-indigo-500 text-white text-[11px] font-bold py-2 rounded-lg transition-all text-center"
@@ -342,7 +342,7 @@ export default function LandingPage({ onLoginSuccess, addLog }: LandingPageProps
                       Open Firebase Authentication Panel ↗
                     </a>
 
-                    <div className="text-[10px] text-slate-400 space-y-1.5 pl-2 border-l border-slate-850">
+                    <div className="text-[10px] text-slate-400 space-y-1.5 pl-2 border-l border-slate-800">
                       <p><strong>1.</strong> Click the button above to go straight to your Firebase settings.</p>
                       <p><strong>2.</strong> Click on the <span className="text-indigo-300 font-semibold">"Sign-in method"</span> tab at the top.</p>
                       <p><strong>3.</strong> Click <span className="text-indigo-300 font-semibold">"Add new provider"</span> (or choose <span className="text-indigo-300 font-semibold">"Email/Password"</span>).</p>
@@ -350,9 +350,9 @@ export default function LandingPage({ onLoginSuccess, addLog }: LandingPageProps
                     </div>
 
                     <div className="relative flex py-1.5 items-center">
-                      <div className="flex-grow border-t border-slate-900"></div>
+                      <div className="flex-grow border-t border-slate-800"></div>
                       <span className="flex-shrink mx-2 text-[8px] text-slate-500 font-mono tracking-widest uppercase">Alternatively</span>
-                      <div className="flex-grow border-t border-slate-900"></div>
+                      <div className="flex-grow border-t border-slate-800"></div>
                     </div>
 
                     <button
@@ -368,12 +368,12 @@ export default function LandingPage({ onLoginSuccess, addLog }: LandingPageProps
             )}
 
             {success && (
-              <div className="bg-emerald-950/40 text-emerald-300 border border-emerald-900/50 p-3 rounded-lg text-xs leading-relaxed">
+              <div className="bg-emerald-950/40 text-emerald-300 border border-emerald-900/50 p-3 rounded-lg text-xs leading-relaxed text-left">
                 ✨ {success}
               </div>
             )}
 
-            <form onSubmit={handleSubmit} className="space-y-4">
+            <form onSubmit={handleSubmit} className="space-y-4 text-left">
               
               {isSignUp && (
                 <div className="space-y-1.5">
@@ -385,7 +385,7 @@ export default function LandingPage({ onLoginSuccess, addLog }: LandingPageProps
                       placeholder="e.g. Director of Personnel"
                       value={name}
                       onChange={(e) => setName(e.target.value)}
-                      className="w-full bg-slate-950 border border-slate-800 rounded-lg py-2 pl-3 pr-3 text-xs text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500 transition-all"
+                      className="w-full bg-slate-950 border border-slate-805 rounded-lg py-2 px-3 text-xs text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500 transition-all font-sans"
                     />
                   </div>
                 </div>
@@ -403,7 +403,7 @@ export default function LandingPage({ onLoginSuccess, addLog }: LandingPageProps
                     placeholder="name@studiobuild.ai"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    className="w-full bg-slate-950 border border-slate-800 rounded-lg py-2 pl-9 pr-3 text-xs text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500 transition-all font-mono"
+                    className="w-full bg-slate-950 border border-slate-805 rounded-lg py-2 pl-9 pr-3 text-xs text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500 transition-all font-mono"
                   />
                 </div>
               </div>
@@ -423,7 +423,7 @@ export default function LandingPage({ onLoginSuccess, addLog }: LandingPageProps
                     placeholder="••••••••"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    className="w-full bg-slate-950 border border-slate-800 rounded-lg py-2 pl-9 pr-3 text-xs text-white placeholder-slate-650 focus:outline-none focus:border-indigo-500 transition-all font-mono"
+                    className="w-full bg-slate-950 border border-slate-805 rounded-lg py-2 pl-9 pr-3 text-xs text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500 transition-all font-mono"
                   />
                 </div>
               </div>
@@ -431,7 +431,7 @@ export default function LandingPage({ onLoginSuccess, addLog }: LandingPageProps
               <button
                 type="submit"
                 disabled={isLoading}
-                className="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-extrabold text-xs py-2.5 rounded-lg transition-all flex items-center justify-center gap-2 cursor-pointer shadow-md mt-6"
+                className="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-extrabold text-xs py-2.5 rounded-lg transition-all flex items-center justify-center gap-2 cursor-pointer shadow-md mt-6 active:scale-95"
               >
                 {isLoading ? (
                   <span className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent" />
@@ -447,7 +447,7 @@ export default function LandingPage({ onLoginSuccess, addLog }: LandingPageProps
                 type="button"
                 onClick={handleGoogleSignIn}
                 disabled={isLoading}
-                className="w-full bg-white hover:bg-slate-100 text-slate-900 font-extrabold text-xs py-2.5 rounded-lg transition-all flex items-center justify-center gap-2 cursor-pointer shadow-md mt-3 border border-slate-200"
+                className="w-full bg-white hover:bg-slate-100 text-slate-905 font-extrabold text-xs py-2.5 rounded-lg transition-all flex items-center justify-center gap-2 cursor-pointer shadow-md mt-3 border border-slate-200 active:scale-95"
               >
                 {isLoading ? (
                   <span className="animate-spin rounded-full h-4 w-4 border-2 border-slate-950 border-t-transparent" />
@@ -460,9 +460,9 @@ export default function LandingPage({ onLoginSuccess, addLog }: LandingPageProps
               </button>
 
               <div className="relative flex py-2 items-center">
-                <div className="flex-grow border-t border-slate-850"></div>
+                <div className="flex-grow border-t border-slate-800"></div>
                 <span className="flex-shrink mx-2.5 text-[8px] text-slate-550 font-mono tracking-widest uppercase">Or fast-bypass entrance</span>
-                <div className="flex-grow border-t border-slate-850"></div>
+                <div className="flex-grow border-t border-slate-800"></div>
               </div>
 
               <div className="grid grid-cols-2 gap-3">
@@ -470,8 +470,8 @@ export default function LandingPage({ onLoginSuccess, addLog }: LandingPageProps
                   type="button"
                   onClick={handleAnonymousSignIn}
                   disabled={isLoading}
-                  className="bg-slate-950 hover:bg-slate-850 text-indigo-300 border border-slate-800 rounded-lg py-2 text-[10px] font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer"
-                  title="Logs in using Firebase Anonymous Credentials (fully synced with Firestore securely)"
+                  className="bg-slate-950 hover:bg-slate-800 text-indigo-300 border border-slate-800 rounded-lg py-2 text-[10px] font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer active:scale-95"
+                  title="Logs in using Firebase Anonymous Credentials"
                 >
                   <Users className="w-3.5 h-3.5 text-indigo-400" />
                   Anonymous Cloud
@@ -480,7 +480,7 @@ export default function LandingPage({ onLoginSuccess, addLog }: LandingPageProps
                   type="button"
                   onClick={handleLocalBypass}
                   disabled={isLoading}
-                  className="bg-slate-950 hover:bg-slate-850 text-emerald-300 border border-slate-800 rounded-lg py-2 text-[10px] font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer"
+                  className="bg-slate-950 hover:bg-slate-800 text-emerald-300 border border-slate-800 rounded-lg py-2 text-[10px] font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer active:scale-95"
                   title="Bypasses Firebase Authentication completely and runs beautifully using local state persistence"
                 >
                   <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
@@ -491,7 +491,7 @@ export default function LandingPage({ onLoginSuccess, addLog }: LandingPageProps
             </form>
 
             {/* Quick Demo Pre-Fill options */}
-            <div className="bg-slate-950/80 p-3.5 rounded-lg border border-slate-805 space-y-2">
+            <div className="bg-slate-950/80 p-3.5 rounded-lg border border-slate-850 space-y-2 text-left">
               <div className="flex justify-between items-center">
                 <span className="text-[9px] uppercase font-bold text-indigo-400 font-mono tracking-wider">⚡ Quick Sandbox Pre-fills</span>
                 <span className="text-[9px] text-indigo-300 font-bold bg-indigo-950/60 px-1.5 py-0.2 rounded border border-indigo-900/50">Demo Credentials</span>
@@ -502,7 +502,7 @@ export default function LandingPage({ onLoginSuccess, addLog }: LandingPageProps
               <button
                 type="button"
                 onClick={handlePreFillAdmin}
-                className="w-full bg-slate-900 hover:bg-slate-850 hover:text-white text-indigo-300 border border-slate-800 hover:border-slate-700 font-mono text-[10px] py-2 rounded font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer"
+                className="w-full bg-slate-900 hover:bg-slate-805 hover:text-white text-indigo-300 border border-slate-800 hover:border-slate-700 font-mono text-[10px] py-1.5 rounded font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer active:scale-95"
               >
                 Inject Demo Administrator Profile Code 🚀
               </button>
