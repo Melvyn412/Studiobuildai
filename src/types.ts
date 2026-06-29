@@ -1,5 +1,6 @@
 export interface Employee {
   id: string;
+  tenantId?: string;
   firstName: string;
   lastName: string;
   email: string;
@@ -28,6 +29,7 @@ export interface ResumeAnalysis {
 
 export interface InterviewTemplate {
   id: string;
+  tenantId?: string;
   title: string;
   department: string;
   seniority: 'Junior' | 'Mid' | 'Senior' | 'Lead';
@@ -40,6 +42,7 @@ export interface InterviewTemplate {
 
 export interface PerformanceReview {
   id: string;
+  tenantId?: string;
   employeeId: string;
   reviewer: string;
   ratingWork: number; // 1-5
@@ -53,6 +56,7 @@ export interface PerformanceReview {
 
 export interface ChecklistItem {
   id: string;
+  tenantId?: string;
   category: 'Onboarding' | 'Offboarding' | 'Compliance' | 'Audit';
   task: string;
   completed: boolean;
@@ -154,4 +158,20 @@ export interface EmployeeOnboarding {
   percentage: number;
   steps: OnboardingStep[];
 }
+
+export interface Tenant {
+  id: string;
+  name: string;
+  subdomain: string;
+  createdAt: string;
+}
+
+export interface WhitelabelConfig {
+  companyName: string;
+  theme: 'indigo' | 'emerald' | 'rose' | 'amber' | 'violet' | 'cyan';
+  customDomain: string;
+  logoIcon: 'shield' | 'globe' | 'briefcase' | 'cpu' | 'terminal' | 'users';
+  isWhitelabelActive: boolean;
+}
+
 

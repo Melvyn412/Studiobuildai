@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Employee, ChecklistItem, InterviewTemplate, PerformanceReview, AuditLog } from './types';
+import { Employee, ChecklistItem, InterviewTemplate, PerformanceReview, AuditLog, Tenant, WhitelabelConfig } from './types';
 import { 
   INITIAL_EMPLOYEES, DEFAULT_CHECKLISTS, DEFAULT_TEMPLATES, INITIAL_AUDIT_LOGS 
 } from './mockData';
@@ -20,11 +20,12 @@ import LandingPage from './components/LandingPage';
 import HolidaysLeavesCalendar from './components/HolidaysLeavesCalendar';
 import WorkforceAnalytics from './components/WorkforceAnalytics';
 import ContractLetterGenerator from './components/ContractLetterGenerator';
+import WhitelabelBranding from './components/WhitelabelBranding';
 
 import { 
   Users, FileText, ClipboardList, Shield, ShieldCheck, Lock,
   GraduationCap, ListChecks, CheckCircle2, FileSignature, Sparkles, CreditCard,
-  GitBranch, Cpu, CalendarDays, BarChart2, Briefcase
+  GitBranch, Cpu, CalendarDays, BarChart2, Briefcase, Globe, Plus, Terminal
 } from 'lucide-react';
 
 import { db, auth } from './firebase';
@@ -95,34 +96,67 @@ export default function App() {
     return () => unsubscribe();
   }, []);
 
+  // Tenancy System
+  const [activeTenantId, setActiveTenantId] = useState<string>(() => {
+    return localStorage.getItem('secure_hr_active_tenant_id') || 'default';
+  });
+
+  const [tenants, setTenants] = useState<Tenant[]>(() => {
+    const saved = localStorage.getItem('secure_hr_tenants');
+    return saved ? JSON.parse(saved) : [
+      { id: 'default', name: 'StudioBuild Corp', subdomain: 'studiobuild', createdAt: new Date().toISOString() }
+    ];
+  });
+
+  // Custom Whitelabel Configuration
+  const [whitelabelConfig, setWhitelabelConfig] = useState<WhitelabelConfig>(() => {
+    const saved = localStorage.getItem('secure_hr_whitelabel_config');
+    return saved ? JSON.parse(saved) : {
+      companyName: 'STUDIOBUILDAI',
+      theme: 'indigo',
+      customDomain: 'hr.studiobuild.ai',
+      logoIcon: 'shield',
+      isWhitelabelActive: false
+    };
+  });
+
   // Offline state engines loaded from localStorage triggers. Mirror collections to/from Firestore on load.
   const [employees, setEmployeesState] = useState<Employee[]>(() => {
-    const saved = localStorage.getItem('secure_hr_employees');
-    return saved ? JSON.parse(saved) : INITIAL_EMPLOYEES;
+    const savedActive = localStorage.getItem('secure_hr_active_tenant_id') || 'default';
+    const saved = localStorage.getItem(`secure_hr_employees_${savedActive}`);
+    if (saved) return JSON.parse(saved);
+    return savedActive === 'default' ? INITIAL_EMPLOYEES : [];
   });
 
   const [checklists, setChecklistsState] = useState<ChecklistItem[]>(() => {
-    const saved = localStorage.getItem('secure_hr_checklists');
-    return saved ? JSON.parse(saved) : DEFAULT_CHECKLISTS;
+    const savedActive = localStorage.getItem('secure_hr_active_tenant_id') || 'default';
+    const saved = localStorage.getItem(`secure_hr_checklists_${savedActive}`);
+    if (saved) return JSON.parse(saved);
+    return savedActive === 'default' ? DEFAULT_CHECKLISTS : [];
   });
 
   const [templates, setTemplatesState] = useState<InterviewTemplate[]>(() => {
-    const saved = localStorage.getItem('secure_hr_templates');
-    return saved ? JSON.parse(saved) : DEFAULT_TEMPLATES;
+    const savedActive = localStorage.getItem('secure_hr_active_tenant_id') || 'default';
+    const saved = localStorage.getItem(`secure_hr_templates_${savedActive}`);
+    if (saved) return JSON.parse(saved);
+    return savedActive === 'default' ? DEFAULT_TEMPLATES : [];
   });
 
   const [reviews, setReviewsState] = useState<PerformanceReview[]>(() => {
-    const saved = localStorage.getItem('secure_hr_reviews');
+    const savedActive = localStorage.getItem('secure_hr_active_tenant_id') || 'default';
+    const saved = localStorage.getItem(`secure_hr_reviews_${savedActive}`);
     return saved ? JSON.parse(saved) : [];
   });
 
   const [analyses, setAnalyses] = useState<any[]>(() => {
-    const saved = localStorage.getItem('secure_hr_analyses');
+    const savedActive = localStorage.getItem('secure_hr_active_tenant_id') || 'default';
+    const saved = localStorage.getItem(`secure_hr_analyses_${savedActive}`);
     return saved ? JSON.parse(saved) : [];
   });
 
   const [auditLogs, setAuditLogs] = useState<AuditLog[]>(() => {
-    const saved = localStorage.getItem('secure_hr_audit_logs');
+    const savedActive = localStorage.getItem('secure_hr_active_tenant_id') || 'default';
+    const saved = localStorage.getItem(`secure_hr_audit_logs_${savedActive}`);
     return saved ? JSON.parse(saved) : INITIAL_AUDIT_LOGS;
   });
 
@@ -137,11 +171,70 @@ export default function App() {
     return (saved as any) || 'Starter';
   });
 
-  const [activeTab, setActiveTab] = useState<'roster' | 'screener' | 'interviews' | 'evaluations' | 'checklists' | 'policies' | 'automation' | 'doc-intel' | 'chat' | 'billing' | 'security' | 'calendar' | 'analytics' | 'contracts'>('roster');
+  const [activeTab, setActiveTab] = useState<'roster' | 'screener' | 'interviews' | 'evaluations' | 'checklists' | 'policies' | 'automation' | 'doc-intel' | 'chat' | 'billing' | 'security' | 'calendar' | 'analytics' | 'contracts' | 'whitelabel'>('roster');
 
   useEffect(() => {
     localStorage.setItem('secure_hr_subscription_tier', activeTier);
   }, [activeTier]);
+
+  // Load data when activeTenantId changes
+  useEffect(() => {
+    const savedEmp = localStorage.getItem(`secure_hr_employees_${activeTenantId}`);
+    setEmployeesState(savedEmp ? JSON.parse(savedEmp) : (activeTenantId === 'default' ? INITIAL_EMPLOYEES : []));
+
+    const savedChecklists = localStorage.getItem(`secure_hr_checklists_${activeTenantId}`);
+    setChecklistsState(savedChecklists ? JSON.parse(savedChecklists) : (activeTenantId === 'default' ? DEFAULT_CHECKLISTS : []));
+
+    const savedTemplates = localStorage.getItem(`secure_hr_templates_${activeTenantId}`);
+    setTemplatesState(savedTemplates ? JSON.parse(savedTemplates) : (activeTenantId === 'default' ? DEFAULT_TEMPLATES : []));
+
+    const savedReviews = localStorage.getItem(`secure_hr_reviews_${activeTenantId}`);
+    setReviewsState(savedReviews ? JSON.parse(savedReviews) : []);
+
+    const savedAnalyses = localStorage.getItem(`secure_hr_analyses_${activeTenantId}`);
+    setAnalyses(savedAnalyses ? JSON.parse(savedAnalyses) : []);
+
+    const savedLogs = localStorage.getItem(`secure_hr_audit_logs_${activeTenantId}`);
+    setAuditLogs(savedLogs ? JSON.parse(savedLogs) : INITIAL_AUDIT_LOGS);
+  }, [activeTenantId]);
+
+  // Persistence effects
+  useEffect(() => {
+    localStorage.setItem('secure_hr_tenants', JSON.stringify(tenants));
+  }, [tenants]);
+
+  useEffect(() => {
+    localStorage.setItem('secure_hr_active_tenant_id', activeTenantId);
+  }, [activeTenantId]);
+
+  useEffect(() => {
+    localStorage.setItem('secure_hr_whitelabel_config', JSON.stringify(whitelabelConfig));
+  }, [whitelabelConfig]);
+
+  useEffect(() => {
+    localStorage.setItem(`secure_hr_employees_${activeTenantId}`, JSON.stringify(employees));
+  }, [employees, activeTenantId]);
+
+  useEffect(() => {
+    localStorage.setItem(`secure_hr_checklists_${activeTenantId}`, JSON.stringify(checklists));
+  }, [checklists, activeTenantId]);
+
+  useEffect(() => {
+    localStorage.setItem(`secure_hr_templates_${activeTenantId}`, JSON.stringify(templates));
+  }, [templates, activeTenantId]);
+
+  useEffect(() => {
+    localStorage.setItem(`secure_hr_reviews_${activeTenantId}`, JSON.stringify(reviews));
+  }, [reviews, activeTenantId]);
+
+  useEffect(() => {
+    localStorage.setItem(`secure_hr_analyses_${activeTenantId}`, JSON.stringify(analyses));
+  }, [analyses, activeTenantId]);
+
+  useEffect(() => {
+    localStorage.setItem(`secure_hr_audit_logs_${activeTenantId}`, JSON.stringify(auditLogs));
+  }, [auditLogs, activeTenantId]);
+
 
   // Wrapped State Setters That Also Update Firestore in Background
   const setEmployees = (value: React.SetStateAction<Employee[]>) => {
@@ -165,7 +258,7 @@ export default function App() {
         });
         changedOrAdded.forEach(async (emp: Employee) => {
           try {
-            await setDoc(doc(db, 'employees', emp.id), { ...emp, userId: auth.currentUser!.uid });
+            await setDoc(doc(db, 'employees', emp.id), { ...emp, tenantId: activeTenantId, userId: auth.currentUser!.uid });
           } catch (e) {
             console.error("Firestore employee write fail:", e);
           }
@@ -195,7 +288,7 @@ export default function App() {
         });
         changedOrAdded.forEach(async (chk: ChecklistItem) => {
           try {
-            await setDoc(doc(db, 'checklists', chk.id), { ...chk, userId: auth.currentUser!.uid });
+            await setDoc(doc(db, 'checklists', chk.id), { ...chk, tenantId: activeTenantId, userId: auth.currentUser!.uid });
           } catch (e) {
             console.error("Firestore checklist write fail:", e);
           }
@@ -225,7 +318,7 @@ export default function App() {
         });
         changedOrAdded.forEach(async (tmp: InterviewTemplate) => {
           try {
-            await setDoc(doc(db, 'templates', tmp.id), { ...tmp, userId: auth.currentUser!.uid });
+            await setDoc(doc(db, 'templates', tmp.id), { ...tmp, tenantId: activeTenantId, userId: auth.currentUser!.uid });
           } catch (e) {
             console.error("Firestore template write fail:", e);
           }
@@ -255,7 +348,7 @@ export default function App() {
         });
         changedOrAdded.forEach(async (rev: PerformanceReview) => {
           try {
-            await setDoc(doc(db, 'reviews', rev.id), { ...rev, userId: auth.currentUser!.uid });
+            await setDoc(doc(db, 'reviews', rev.id), { ...rev, tenantId: activeTenantId, userId: auth.currentUser!.uid });
           } catch (e) {
             console.error("Firestore review write fail:", e);
           }
@@ -273,21 +366,26 @@ export default function App() {
     const qEmp = query(collection(db, 'employees'), where('userId', '==', fbUser.uid));
     const unsubEmp = onSnapshot(qEmp, (snapshot) => {
       const list: Employee[] = [];
+      let hasDataForUser = false;
       snapshot.forEach((d) => {
-        list.push(d.data() as Employee);
+        hasDataForUser = true;
+        const emp = d.data() as Employee;
+        if (emp.tenantId === activeTenantId || (!emp.tenantId && activeTenantId === 'default')) {
+          list.push(emp);
+        }
       });
-      if (list.length > 0) {
+      if (hasDataForUser) {
         setEmployeesState(prev => {
           if (areRecordsEqual(prev, list)) return prev;
           return list;
         });
-      } else {
+      } else if (activeTenantId === 'default') {
         // Seed database atomically in a single batch to prevent multiple snapshot callbacks
         try {
           const batch = writeBatch(db);
           INITIAL_EMPLOYEES.forEach((emp) => {
             const ref = doc(db, 'employees', emp.id);
-            batch.set(ref, { ...emp, userId: fbUser.uid });
+            batch.set(ref, { ...emp, tenantId: 'default', userId: fbUser.uid });
           });
           batch.commit().catch((err) => {
             handleFirestoreError(err, OperationType.WRITE, 'employees/seed');
@@ -304,20 +402,25 @@ export default function App() {
     const qChk = query(collection(db, 'checklists'), where('userId', '==', fbUser.uid));
     const unsubChk = onSnapshot(qChk, (snapshot) => {
       const list: ChecklistItem[] = [];
+      let hasDataForUser = false;
       snapshot.forEach((d) => {
-        list.push(d.data() as ChecklistItem);
+        hasDataForUser = true;
+        const chk = d.data() as ChecklistItem;
+        if (chk.tenantId === activeTenantId || (!chk.tenantId && activeTenantId === 'default')) {
+          list.push(chk);
+        }
       });
-      if (list.length > 0) {
+      if (hasDataForUser) {
         setChecklistsState(prev => {
           if (areRecordsEqual(prev, list)) return prev;
           return list;
         });
-      } else {
+      } else if (activeTenantId === 'default') {
         try {
           const batch = writeBatch(db);
           DEFAULT_CHECKLISTS.forEach((chk) => {
             const ref = doc(db, 'checklists', chk.id);
-            batch.set(ref, { ...chk, userId: fbUser.uid });
+            batch.set(ref, { ...chk, tenantId: 'default', userId: fbUser.uid });
           });
           batch.commit().catch((err) => {
             handleFirestoreError(err, OperationType.WRITE, 'checklists/seed');
@@ -334,20 +437,25 @@ export default function App() {
     const qTmp = query(collection(db, 'templates'), where('userId', '==', fbUser.uid));
     const unsubTmp = onSnapshot(qTmp, (snapshot) => {
       const list: InterviewTemplate[] = [];
+      let hasDataForUser = false;
       snapshot.forEach((d) => {
-        list.push(d.data() as InterviewTemplate);
+        hasDataForUser = true;
+        const tmp = d.data() as InterviewTemplate;
+        if (tmp.tenantId === activeTenantId || (!tmp.tenantId && activeTenantId === 'default')) {
+          list.push(tmp);
+        }
       });
-      if (list.length > 0) {
+      if (hasDataForUser) {
         setTemplatesState(prev => {
           if (areRecordsEqual(prev, list)) return prev;
           return list;
         });
-      } else {
+      } else if (activeTenantId === 'default') {
         try {
           const batch = writeBatch(db);
           DEFAULT_TEMPLATES.forEach((tmp) => {
             const ref = doc(db, 'templates', tmp.id);
-            batch.set(ref, { ...tmp, userId: fbUser.uid });
+            batch.set(ref, { ...tmp, tenantId: 'default', userId: fbUser.uid });
           });
           batch.commit().catch((err) => {
             handleFirestoreError(err, OperationType.WRITE, 'templates/seed');
@@ -365,7 +473,10 @@ export default function App() {
     const unsubRev = onSnapshot(qRev, (snapshot) => {
       const list: PerformanceReview[] = [];
       snapshot.forEach((d) => {
-        list.push(d.data() as PerformanceReview);
+        const rev = d.data() as PerformanceReview;
+        if (rev.tenantId === activeTenantId || (!rev.tenantId && activeTenantId === 'default')) {
+          list.push(rev);
+        }
       });
       setReviewsState(prev => {
         if (areRecordsEqual(prev, list)) return prev;
@@ -381,32 +492,7 @@ export default function App() {
       unsubTmp();
       unsubRev();
     };
-  }, [fbUser]);
-
-  // Sync state triggers to localStorage safe nodes
-  useEffect(() => {
-    localStorage.setItem('secure_hr_employees', JSON.stringify(employees));
-  }, [employees]);
-
-  useEffect(() => {
-    localStorage.setItem('secure_hr_checklists', JSON.stringify(checklists));
-  }, [checklists]);
-
-  useEffect(() => {
-    localStorage.setItem('secure_hr_templates', JSON.stringify(templates));
-  }, [templates]);
-
-  useEffect(() => {
-    localStorage.setItem('secure_hr_reviews', JSON.stringify(reviews));
-  }, [reviews]);
-
-  useEffect(() => {
-    localStorage.setItem('secure_hr_analyses', JSON.stringify(analyses));
-  }, [analyses]);
-
-  useEffect(() => {
-    localStorage.setItem('secure_hr_audit_logs', JSON.stringify(auditLogs));
-  }, [auditLogs]);
+  }, [fbUser, activeTenantId]);
 
   useEffect(() => {
     localStorage.setItem('secure_hr_masked', String(isMasked));
@@ -490,24 +576,240 @@ export default function App() {
     );
   }
 
+  // Get dynamic branding configuration details
+  const currentTheme = whitelabelConfig.isWhitelabelActive ? whitelabelConfig.theme : 'indigo';
+  const currentCompanyName = whitelabelConfig.isWhitelabelActive ? whitelabelConfig.companyName : 'STUDIOBUILDAI';
+  
+  const getThemeClasses = (themeName: string) => {
+    switch (themeName) {
+      case 'emerald':
+        return {
+          bg: 'bg-emerald-600',
+          bgHover: 'hover:bg-emerald-500',
+          text: 'text-emerald-400',
+          textHover: 'hover:text-emerald-300',
+          border: 'border-emerald-500/20',
+          borderFocus: 'focus:border-emerald-500',
+          badge: 'bg-emerald-950/60 text-emerald-300 border-emerald-900/50',
+          badgeHover: 'hover:bg-emerald-950/80',
+          shadow: 'shadow-emerald-500/10'
+        };
+      case 'rose':
+        return {
+          bg: 'bg-rose-600',
+          bgHover: 'hover:bg-rose-500',
+          text: 'text-rose-400',
+          textHover: 'hover:text-rose-300',
+          border: 'border-rose-500/20',
+          borderFocus: 'focus:border-rose-500',
+          badge: 'bg-rose-950/60 text-rose-300 border-rose-900/50',
+          badgeHover: 'hover:bg-rose-950/80',
+          shadow: 'shadow-rose-500/10'
+        };
+      case 'amber':
+        return {
+          bg: 'bg-amber-600',
+          bgHover: 'hover:bg-amber-500',
+          text: 'text-amber-400',
+          textHover: 'hover:text-amber-300',
+          border: 'border-amber-500/20',
+          borderFocus: 'focus:border-amber-500',
+          badge: 'bg-amber-950/60 text-amber-300 border-amber-900/50',
+          badgeHover: 'hover:bg-amber-950/80',
+          shadow: 'shadow-amber-500/10'
+        };
+      case 'violet':
+        return {
+          bg: 'bg-violet-600',
+          bgHover: 'hover:bg-violet-500',
+          text: 'text-violet-400',
+          textHover: 'hover:text-violet-300',
+          border: 'border-violet-500/20',
+          borderFocus: 'focus:border-violet-500',
+          badge: 'bg-violet-950/60 text-violet-300 border-violet-900/50',
+          badgeHover: 'hover:bg-violet-950/80',
+          shadow: 'shadow-violet-500/10'
+        };
+      case 'cyan':
+        return {
+          bg: 'bg-cyan-600',
+          bgHover: 'hover:bg-cyan-500',
+          text: 'text-cyan-400',
+          textHover: 'hover:text-cyan-300',
+          border: 'border-cyan-500/20',
+          borderFocus: 'focus:border-cyan-500',
+          badge: 'bg-cyan-950/60 text-cyan-300 border-cyan-900/50',
+          badgeHover: 'hover:bg-cyan-950/80',
+          shadow: 'shadow-cyan-500/10'
+        };
+      default: // indigo
+        return {
+          bg: 'bg-indigo-600',
+          bgHover: 'hover:bg-indigo-500',
+          text: 'text-indigo-400',
+          textHover: 'hover:text-indigo-300',
+          border: 'border-indigo-500/20',
+          borderFocus: 'focus:border-indigo-500',
+          badge: 'bg-indigo-950/60 text-indigo-300 border-indigo-900/50',
+          badgeHover: 'hover:bg-indigo-950/80',
+          shadow: 'shadow-indigo-500/10'
+        };
+    }
+  };
+
+  const activeClasses = getThemeClasses(currentTheme);
+
+  const LogoIcon = () => {
+    if (!whitelabelConfig.isWhitelabelActive) {
+      return <ShieldCheck className="w-5 h-5 text-white" />;
+    }
+    switch (whitelabelConfig.logoIcon) {
+      case 'globe': return <Globe className="w-5 h-5 text-white" />;
+      case 'briefcase': return <Briefcase className="w-5 h-5 text-white" />;
+      case 'cpu': return <Cpu className="w-5 h-5 text-white" />;
+      case 'terminal': return <Terminal className="w-5 h-5 text-white" />;
+      case 'users': return <Users className="w-5 h-5 text-white" />;
+      default: return <Shield className="w-5 h-5 text-white" />;
+    }
+  };
+
+  // Selector state
+  const [showWorkspaceSelector, setShowWorkspaceSelector] = useState(false);
+  const [newWorkspaceName, setNewWorkspaceName] = useState('');
+  const [newWorkspaceSubdomain, setNewWorkspaceSubdomain] = useState('');
+  const [isCreatingWorkspace, setIsCreatingWorkspace] = useState(false);
+
+  const activeTenant = tenants.find(t => t.id === activeTenantId) || tenants[0];
+
+  const handleCreateWorkspace = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newWorkspaceName.trim()) return;
+    const cleanSubdomain = newWorkspaceSubdomain.trim().toLowerCase().replace(/[^a-z0-9]/g, '') || newWorkspaceName.toLowerCase().replace(/[^a-z0-9]/g, '');
+    
+    const newTenant: Tenant = {
+      id: 'tenant_' + Date.now(),
+      name: newWorkspaceName.trim(),
+      subdomain: cleanSubdomain,
+      createdAt: new Date().toISOString()
+    };
+
+    setTenants(prev => [...prev, newTenant]);
+    setActiveTenantId(newTenant.id);
+    setNewWorkspaceName('');
+    setNewWorkspaceSubdomain('');
+    setIsCreatingWorkspace(false);
+    setShowWorkspaceSelector(false);
+    addLog('Corporate Tenant Provisioned', 'Modification', `Successfully registered tenant workspace: "${newTenant.name}" (subdomain: ${newTenant.subdomain}.studiobuild.ai)`);
+  };
+
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col font-sans" id="applet-viewport">
       
       {/* Top Secure Header Bar */}
       <header className="bg-slate-900 border-b border-slate-800 py-3.5 px-6 sticky top-0 z-40 shadow-md" id="header-control">
         <div className="max-w-7xl mx-auto flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-          <div className="flex items-center gap-2.5">
-            <div className="bg-indigo-600 p-2 rounded-lg text-white shadow-xs">
-              <ShieldCheck className="w-5 h-5" />
+          <div className="flex flex-col md:flex-row md:items-center gap-4">
+            <div className="flex items-center gap-2.5">
+              <div className={`${activeClasses.bg} p-2 rounded-lg text-white shadow-xs transition-colors duration-350`}>
+                <LogoIcon />
+              </div>
+              <div>
+                <h1 className="text-md font-extrabold tracking-tight text-white flex items-center gap-1.5 uppercase transition-all">
+                  {currentCompanyName}
+                  {whitelabelConfig.isWhitelabelActive && (
+                    <span className="text-[8px] bg-emerald-950/60 text-emerald-300 px-1 rounded border border-emerald-900/40 font-bold uppercase select-none">
+                      Whitelabel Active
+                    </span>
+                  )}
+                </h1>
+                <p className="text-[10px] text-slate-400">Strictly localized client-side personnel records, screening, and evaluations toolkit.</p>
+              </div>
             </div>
-            <div>
-              <h1 className="text-md font-extrabold tracking-tight text-white flex items-center gap-1.5">
-                STUDIOBUILDAI
-                <span className="text-[10px] bg-indigo-950/60 text-indigo-300 px-1.5 py-0.2 rounded border border-indigo-900/50 font-bold font-mono tracking-wide uppercase mt-0.5 select-none animate-pulse">
-                  Offline • Production
-                </span>
-              </h1>
-              <p className="text-[10px] text-slate-400">Strictly localized client-side personnel records, screening, and evaluations toolkit.</p>
+
+            {/* Elegant Workspace Dropdown */}
+            <div className="relative z-50">
+              <button
+                onClick={() => setShowWorkspaceSelector(!showWorkspaceSelector)}
+                className="bg-slate-950 hover:bg-slate-850 border border-slate-800 rounded-lg px-3 py-1.5 text-xs text-slate-200 font-semibold flex items-center gap-2 transition-all cursor-pointer select-none"
+              >
+                <Globe className={`w-3.5 h-3.5 ${activeClasses.text}`} />
+                <span>Workspace: <strong className="text-white">{activeTenant.name}</strong></span>
+                <span className="text-slate-500 font-mono text-[9px]">({activeTenant.subdomain})</span>
+                <span className="text-[9px] text-slate-400">▼</span>
+              </button>
+
+              {showWorkspaceSelector && (
+                <div className="absolute top-full left-0 mt-1.5 w-64 bg-slate-900 border border-slate-800 rounded-lg shadow-xl p-2.5 space-y-2 text-left animate-in fade-in slide-in-from-top-1 duration-100">
+                  <div className="text-[9px] font-bold text-slate-500 uppercase tracking-wider px-1.5">
+                    Select Tenant Workspace
+                  </div>
+                  <div className="max-h-48 overflow-y-auto space-y-1">
+                    {tenants.map((t) => (
+                      <button
+                        key={t.id}
+                        onClick={() => {
+                          setActiveTenantId(t.id);
+                          setShowWorkspaceSelector(false);
+                          addLog('Workspace Context Switched', 'System', `Switched context cleanly to workspace: "${t.name}"`);
+                        }}
+                        className={`w-full text-left px-2.5 py-1.5 rounded-md text-xs font-medium flex items-center justify-between transition-all cursor-pointer ${
+                          activeTenantId === t.id
+                          ? 'bg-slate-950 text-white border-l-2 border-indigo-500'
+                          : 'text-slate-400 hover:text-white hover:bg-slate-950'
+                        }`}
+                      >
+                        <span className="truncate pr-1">{t.name}</span>
+                        <span className="text-[9px] text-slate-500 font-mono">({t.subdomain})</span>
+                      </button>
+                    ))}
+                  </div>
+
+                  <div className="border-t border-slate-800/80 pt-2">
+                    {isCreatingWorkspace ? (
+                      <form onSubmit={handleCreateWorkspace} className="space-y-2 p-1">
+                        <input
+                          type="text"
+                          required
+                          placeholder="Company/Workspace Name"
+                          value={newWorkspaceName}
+                          onChange={(e) => setNewWorkspaceName(e.target.value)}
+                          className="w-full bg-slate-950 border border-slate-800 rounded px-2 py-1 text-xs text-white focus:outline-none focus:border-indigo-500"
+                        />
+                        <input
+                          type="text"
+                          placeholder="subdomain (optional)"
+                          value={newWorkspaceSubdomain}
+                          onChange={(e) => setNewWorkspaceSubdomain(e.target.value)}
+                          className="w-full bg-slate-950 border border-slate-800 rounded px-2 py-1 text-[10px] text-slate-300 font-mono focus:outline-none focus:border-indigo-500"
+                        />
+                        <div className="flex gap-1.5 pt-1">
+                          <button
+                            type="submit"
+                            className="flex-1 bg-indigo-600 hover:bg-indigo-500 text-white text-[10px] font-bold py-1 rounded transition-all"
+                          >
+                            Create
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => setIsCreatingWorkspace(false)}
+                            className="flex-1 bg-slate-950 border border-slate-800 text-slate-400 text-[10px] font-bold py-1 rounded transition-all"
+                          >
+                            Cancel
+                          </button>
+                        </div>
+                      </form>
+                    ) : (
+                      <button
+                        onClick={() => setIsCreatingWorkspace(true)}
+                        className="w-full py-1.5 rounded bg-slate-950 hover:bg-slate-850 border border-slate-800/50 text-indigo-400 hover:text-indigo-300 text-[10px] font-black tracking-wider uppercase flex items-center justify-center gap-1 cursor-pointer"
+                      >
+                        <Plus className="w-3.5 h-3.5" />
+                        Provision Tenant
+                      </button>
+                    )}
+                  </div>
+                </div>
+              )}
             </div>
           </div>
 
@@ -638,7 +940,7 @@ export default function App() {
             onClick={() => setActiveTab('roster')}
             className={`flex-1 min-w-[100px] text-center px-4 py-2 rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
               activeTab === 'roster' 
-              ? 'bg-indigo-600 text-white shadow-sm' 
+              ? `${activeClasses.bg} text-white shadow-sm` 
               : 'text-slate-400 hover:text-slate-200 hover:bg-slate-850'
             }`}
           >
@@ -650,7 +952,7 @@ export default function App() {
             onClick={() => setActiveTab('screener')}
             className={`flex-1 min-w-[100px] text-center px-4 py-2 rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
               activeTab === 'screener' 
-              ? 'bg-indigo-600 text-white shadow-sm' 
+              ? `${activeClasses.bg} text-white shadow-sm` 
               : 'text-slate-400 hover:text-slate-200 hover:bg-slate-850'
             }`}
           >
@@ -662,7 +964,7 @@ export default function App() {
             onClick={() => setActiveTab('interviews')}
             className={`flex-1 min-w-[100px] text-center px-4 py-2 rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
               activeTab === 'interviews' 
-              ? 'bg-indigo-600 text-white shadow-sm' 
+              ? `${activeClasses.bg} text-white shadow-sm` 
               : 'text-slate-400 hover:text-slate-200 hover:bg-slate-850'
             }`}
           >
@@ -674,7 +976,7 @@ export default function App() {
             onClick={() => setActiveTab('evaluations')}
             className={`flex-1 min-w-[100px] text-center px-4 py-2 rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
               activeTab === 'evaluations' 
-              ? 'bg-indigo-600 text-white shadow-sm' 
+              ? `${activeClasses.bg} text-white shadow-sm` 
               : 'text-slate-400 hover:text-slate-200 hover:bg-slate-850'
             }`}
           >
@@ -686,7 +988,7 @@ export default function App() {
             onClick={() => setActiveTab('checklists')}
             className={`flex-1 min-w-[100px] text-center px-4 py-2 rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
               activeTab === 'checklists' 
-              ? 'bg-indigo-600 text-white shadow-sm' 
+              ? `${activeClasses.bg} text-white shadow-sm` 
               : 'text-slate-400 hover:text-slate-200 hover:bg-slate-850'
             }`}
           >
@@ -698,7 +1000,7 @@ export default function App() {
             onClick={() => setActiveTab('policies')}
             className={`flex-1 min-w-[100px] text-center px-4 py-2 rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
               activeTab === 'policies' 
-              ? 'bg-indigo-600 text-white shadow-sm' 
+              ? `${activeClasses.bg} text-white shadow-sm` 
               : 'text-slate-400 hover:text-slate-200 hover:bg-slate-850'
             }`}
           >
@@ -710,7 +1012,7 @@ export default function App() {
             onClick={() => setActiveTab('automation')}
             className={`flex-1 min-w-[100px] text-center px-4 py-2 rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
               activeTab === 'automation' 
-              ? 'bg-indigo-600 text-white shadow-sm' 
+              ? `${activeClasses.bg} text-white shadow-sm` 
               : 'text-slate-400 hover:text-slate-200 hover:bg-slate-850'
             }`}
           >
@@ -722,7 +1024,7 @@ export default function App() {
             onClick={() => setActiveTab('doc-intel')}
             className={`flex-1 min-w-[100px] text-center px-4 py-2 rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
               activeTab === 'doc-intel' 
-              ? 'bg-indigo-600 text-white shadow-sm' 
+              ? `${activeClasses.bg} text-white shadow-sm` 
               : 'text-slate-400 hover:text-slate-200 hover:bg-slate-850'
             }`}
           >
@@ -734,7 +1036,7 @@ export default function App() {
             onClick={() => setActiveTab('chat')}
             className={`flex-1 min-w-[100px] text-center px-4 py-2 rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
               activeTab === 'chat' 
-              ? 'bg-indigo-600 text-white shadow-sm' 
+              ? `${activeClasses.bg} text-white shadow-sm` 
               : 'text-slate-400 hover:text-slate-200 hover:bg-slate-850'
             }`}
           >
@@ -767,7 +1069,7 @@ export default function App() {
             onClick={() => setActiveTab('calendar')}
             className={`flex-1 min-w-[100px] text-center px-4 py-2 rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
               activeTab === 'calendar' 
-              ? 'bg-indigo-600 text-white shadow-sm' 
+              ? `${activeClasses.bg} text-white shadow-sm` 
               : 'text-slate-400 hover:text-slate-200 hover:bg-slate-850'
             }`}
           >
@@ -779,7 +1081,7 @@ export default function App() {
             onClick={() => setActiveTab('analytics')}
             className={`flex-1 min-w-[100px] text-center px-4 py-2 rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
               activeTab === 'analytics' 
-              ? 'bg-indigo-600 text-white shadow-sm' 
+              ? `${activeClasses.bg} text-white shadow-sm` 
               : 'text-slate-400 hover:text-slate-200 hover:bg-slate-850'
             }`}
           >
@@ -791,7 +1093,7 @@ export default function App() {
             onClick={() => setActiveTab('contracts')}
             className={`flex-1 min-w-[100px] text-center px-4 py-2 rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
               activeTab === 'contracts' 
-              ? 'bg-indigo-600 text-white shadow-sm' 
+              ? `${activeClasses.bg} text-white shadow-sm` 
               : 'text-slate-400 hover:text-slate-200 hover:bg-slate-850'
             }`}
           >
@@ -803,12 +1105,24 @@ export default function App() {
             onClick={() => setActiveTab('security')}
             className={`flex-1 min-w-[100px] text-center px-4 py-2 rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
               activeTab === 'security' 
-              ? 'bg-indigo-600 text-white shadow-sm' 
+              ? `${activeClasses.bg} text-white shadow-sm` 
               : 'text-slate-400 hover:text-slate-200 hover:bg-slate-850'
             }`}
           >
             <Shield className="w-4 h-4" />
             Security & Controls
+          </button>
+
+          <button
+            onClick={() => setActiveTab('whitelabel')}
+            className={`flex-1 min-w-[100px] text-center px-4 py-2 rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer border ${
+              activeTab === 'whitelabel' 
+              ? `${activeClasses.bg} text-white shadow-sm border-transparent` 
+              : 'text-indigo-400 hover:text-indigo-305 hover:bg-slate-850 bg-indigo-950/10 border-indigo-900/10'
+            }`}
+          >
+            <Sparkles className="w-4 h-4" />
+            Corporate Whitelabel
           </button>
         </div>
 
@@ -935,6 +1249,19 @@ export default function App() {
               templates={templates}
               setTemplates={setTemplates}
               addLog={addLog}
+            />
+          )}
+
+          {activeTab === 'whitelabel' && (
+            <WhitelabelBranding 
+              config={whitelabelConfig}
+              setConfig={setWhitelabelConfig}
+              activeTier={activeTier}
+              addLog={addLog}
+              onUpgradePrompt={() => {
+                setActiveTab('billing');
+                addLog('Upgrade Workflow Prompted', 'System', 'Redirected user to Plans & Billing tab for Corporate Whitelabel activation.');
+              }}
             />
           )}
         </div>
