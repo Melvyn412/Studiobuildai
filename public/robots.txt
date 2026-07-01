@@ -1,0 +1,7 @@
+# https://www.robotstxt.org/robotstxt.html
+User-agent: *
+Allow: /
+
+# Sitemap Location
+Sitemap: https://studiobuildai.co.uk/sitemap.xml
+Sitemap: https://ais-pre-fmb5dgir3hhgvfacs4hs4k-853104035634.europe-west2.run.app/sitemap.xml

@@ -1,5 +1,6 @@
 import express from "express";
 import path from "path";
+import fs from "fs";
 import { createServer as createViteServer } from "vite";
 import { GoogleGenAI, Type } from "@google/genai";
 import "dotenv/config";
@@ -29,15 +30,57 @@ async function getPayPalAccessToken(clientId: string, clientSecret: string, base
   return data.access_token;
 }
 
-async function startServer() {
-  const app = express();
-  const PORT = 3000;
-
-  app.use(express.json());
+const app = express();
+app.use(express.json());
 
   // API Health check endpoint
   app.get("/api/health", (req, res) => {
     res.json({ status: "ok" });
+  });
+
+  // Explicitly serve sitemap.xml and robots.txt with multiple fallbacks to guarantee uptime and zero 404s
+  app.get("/sitemap.xml", (req, res) => {
+    const distSitemap = path.join(process.cwd(), "dist", "sitemap.xml");
+    const publicSitemap = path.join(process.cwd(), "public", "sitemap.xml");
+    
+    if (fs.existsSync(distSitemap)) {
+      return res.sendFile(distSitemap);
+    } else if (fs.existsSync(publicSitemap)) {
+      return res.sendFile(publicSitemap);
+    } else {
+      // In-memory high-fidelity backup fallback to prevent any possibility of a 404 Not Found error
+      res.header("Content-Type", "application/xml");
+      return res.send(`<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url>
+    <loc>https://studiobuildai.co.uk/</loc>
+    <lastmod>2026-06-30</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>1.0</priority>
+  </url>
+</urlset>`);
+    }
+  });
+
+  app.get("/robots.txt", (req, res) => {
+    const distRobots = path.join(process.cwd(), "dist", "robots.txt");
+    const publicRobots = path.join(process.cwd(), "public", "robots.txt");
+
+    if (fs.existsSync(distRobots)) {
+      return res.sendFile(distRobots);
+    } else if (fs.existsSync(publicRobots)) {
+      return res.sendFile(publicRobots);
+    } else {
+      // In-memory high-fidelity backup fallback to prevent any possibility of a 404 Not Found error
+      res.header("Content-Type", "text/plain");
+      return res.send(`# https://www.robotstxt.org/robotstxt.html
+User-agent: *
+Allow: /
+
+# Sitemap Location
+Sitemap: https://studiobuildai.co.uk/sitemap.xml
+Sitemap: https://ais-pre-fmb5dgir3hhgvfacs4hs4k-853104035634.europe-west2.run.app/sitemap.xml`);
+    }
   });
 
   // Secure PayPal order creation gateway
@@ -311,22 +354,32 @@ Strict requirement: Return ONLY a valid JSON output matching the requested schem
 
   // Vite development server / production server routing
   if (process.env.NODE_ENV !== "production") {
-    const vite = await createViteServer({
-      server: { middlewareMode: true },
-      appType: "spa",
-    });
-    app.use(vite.middlewares);
+    const setupDev = async () => {
+      const vite = await createViteServer({
+        server: { middlewareMode: true },
+        appType: "spa",
+      });
+      app.use(vite.middlewares);
+      
+      const PORT = 3000;
+      app.listen(PORT, "0.0.0.0", () => {
+        console.log(`[Private HR Backend] Dev server listening on http://0.0.0.0:${PORT}`);
+      });
+    };
+    setupDev();
   } else {
     const distPath = path.join(process.cwd(), "dist");
     app.use(express.static(distPath));
     app.get("*", (req, res) => {
       res.sendFile(path.join(distPath, "index.html"));
     });
+
+    if (process.env.VERCEL !== "1") {
+      const PORT = Number(process.env.PORT) || 3000;
+      app.listen(PORT, "0.0.0.0", () => {
+        console.log(`[Private HR Backend] Production server listening on http://0.0.0.0:${PORT}`);
+      });
+    }
   }
 
-  app.listen(PORT, "0.0.0.0", () => {
-    console.log(`[Private HR Backend] Server listening on http://0.0.0.0:${PORT}`);
-  });
-}
-
-startServer();
+export default app;

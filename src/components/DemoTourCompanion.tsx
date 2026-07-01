@@ -129,7 +129,7 @@ export default function DemoTourCompanion({
       badge: 'Custom enterprise SLA',
       desc: 'Manage company licensing. Includes Starter, Pro, Enterprise, and Bespoke Custom AI Deployment with an interactive sliding setup fee calculator.',
       actionLabel: 'Configure Bespoke Custom AI',
-      highlight: 'Leverages the customized sliding £10,000 to £50,050 deployment setups to fit complex corporate SLAs!',
+      highlight: 'Leverages the customized sliding £2,000 to £5,000 deployment setups to fit complex corporate SLAs!',
     },
     {
       tab: 'security',

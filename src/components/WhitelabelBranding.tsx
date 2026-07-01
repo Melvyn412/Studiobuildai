@@ -30,7 +30,7 @@ export default function WhitelabelBranding({
   const [verificationPassed, setVerificationPassed] = useState(config.isWhitelabelActive);
   const [successMsg, setSuccessMsg] = useState('');
 
-  const isPremiumUnlocked = activeTier === 'Enterprise' || activeTier === 'CustomAI';
+  const isPremiumUnlocked = activeTier === 'CustomAI';
 
   const iconsList = [
     { key: 'shield', icon: Shield, label: 'Secure Shield' },
@@ -128,10 +128,10 @@ export default function WhitelabelBranding({
         <div className="bg-indigo-950/20 border border-indigo-900/40 p-5 rounded-xl text-left space-y-3">
           <div className="flex items-center gap-2 text-indigo-400 font-extrabold text-sm">
             <AlertCircle className="w-5 h-5" />
-            Premium Feature Gate • Enterprise Whitelabel Customization
+            Premium Feature Gate • Custom AI Deployment Whitelabel Customization
           </div>
           <p className="text-xs text-slate-350 leading-relaxed max-w-3xl">
-            Whitelabel capabilities are reserved exclusively for clients subscribed to our **Enterprise** or **Custom AI** tiers. However, as an Administrator, you can fully test and preview these configuration parameters in this live session before provisioning!
+            Whitelabel capabilities are reserved exclusively for clients subscribed to our **Custom AI Deployment** tier. However, as an Administrator, you can fully test and preview these configuration parameters in this live session before provisioning!
           </p>
           <button
             onClick={onUpgradePrompt}

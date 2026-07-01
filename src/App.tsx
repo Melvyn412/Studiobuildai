@@ -577,8 +577,9 @@ export default function App() {
   }
 
   // Get dynamic branding configuration details
-  const currentTheme = whitelabelConfig.isWhitelabelActive ? whitelabelConfig.theme : 'indigo';
-  const currentCompanyName = whitelabelConfig.isWhitelabelActive ? whitelabelConfig.companyName : 'STUDIOBUILDAI';
+  const isWhitelabelOperating = whitelabelConfig.isWhitelabelActive && activeTier === 'CustomAI';
+  const currentTheme = isWhitelabelOperating ? whitelabelConfig.theme : 'indigo';
+  const currentCompanyName = isWhitelabelOperating ? whitelabelConfig.companyName : 'STUDIOBUILDAI';
   
   const getThemeClasses = (themeName: string) => {
     switch (themeName) {
@@ -660,7 +661,7 @@ export default function App() {
   const activeClasses = getThemeClasses(currentTheme);
 
   const LogoIcon = () => {
-    if (!whitelabelConfig.isWhitelabelActive) {
+    if (!isWhitelabelOperating) {
       return <ShieldCheck className="w-5 h-5 text-white" />;
     }
     switch (whitelabelConfig.logoIcon) {
@@ -716,7 +717,7 @@ export default function App() {
               <div>
                 <h1 className="text-md font-extrabold tracking-tight text-white flex items-center gap-1.5 uppercase transition-all">
                   {currentCompanyName}
-                  {whitelabelConfig.isWhitelabelActive && (
+                  {isWhitelabelOperating && (
                     <span className="text-[8px] bg-emerald-950/60 text-emerald-300 px-1 rounded border border-emerald-900/40 font-bold uppercase select-none">
                       Whitelabel Active
                     </span>

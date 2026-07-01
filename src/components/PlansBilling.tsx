@@ -81,7 +81,7 @@ const SUPPORTED_COUPONS: Record<string, { discount: number; description: string 
 export default function PlansBilling({ addLog, activeTier, setActiveTier }: PlansBillingProps) {
   const [billingPeriod, setBillingPeriod] = useState<'monthly' | 'annually'>('annually');
   const [checkoutPlan, setCheckoutPlan] = useState<'Professional' | 'Enterprise' | 'CustomAI' | null>(null);
-  const [setupFee, setSetupFee] = useState<number>(25000); // default middle setup fee of £25,000
+  const [setupFee, setSetupFee] = useState<number>(3500); // default middle setup fee of £3,500
   const [activeSupportTier, setActiveSupportTier] = useState<'none' | 'basic' | 'standard' | 'enterprise'>(() => {
     return (localStorage.getItem('secure_hr_active_support_tier') as any) || 'none';
   });
@@ -675,7 +675,7 @@ export default function PlansBilling({ addLog, activeTier, setActiveTier }: Plan
                       <span className="text-[10px] text-slate-500 block">Billed monthly recurring card channel</span>
                     )}
                     <div className="text-[10px] text-emerald-450 font-mono font-semibold mt-1.5">
-                      + £10,000 – £50,000 one-time setup fee
+                      + £2,000 – £5,000 one-time setup fee
                     </div>
                   </div>
 
@@ -713,7 +713,7 @@ export default function PlansBilling({ addLog, activeTier, setActiveTier }: Plan
                   <button
                     onClick={() => {
                       setCheckoutPlan('CustomAI');
-                      setSetupFee(25000); // Reset setup fee to £25k defaults
+                      setSetupFee(3500); // Reset setup fee to £3.5k defaults
                       setCheckoutStep('form');
                     }}
                     className={`w-full py-2.5 rounded-lg text-xs font-black tracking-wide transition-all shadow-md cursor-pointer ${
@@ -973,24 +973,24 @@ export default function PlansBilling({ addLog, activeTier, setActiveTier }: Plan
                       <span className="font-mono font-black text-white text-xs px-2.5 py-0.5 rounded bg-emerald-950/50 border border-emerald-900/40">£{setupFee.toLocaleString()}</span>
                     </div>
                     <p className="text-[10px] text-slate-400 leading-tight">
-                      Under agreed contract terms, select the designated one-time system deployment, offline encryption setup, and staff onboarding calibration fee (£10,000 to £50,000).
+                      Under agreed contract terms, select the designated one-time system deployment, offline encryption setup, and staff onboarding calibration fee (£2,000 to £5,000).
                     </p>
                     <div className="flex items-center gap-3">
-                      <span className="text-[10px] text-slate-500 font-mono font-bold">£10k</span>
+                      <span className="text-[10px] text-slate-500 font-mono font-bold">£2k</span>
                       <input
                         type="range"
-                        min="10000"
-                        max="50000"
-                        step="5000"
+                        min="2000"
+                        max="5000"
+                        step="250"
                         value={setupFee}
                         onChange={(e) => setSetupFee(parseInt(e.target.value))}
                         className="flex-1 accent-emerald-500 cursor-pointer h-1.5 bg-slate-800 rounded-lg appearance-none"
                       />
-                      <span className="text-[10px] text-slate-500 font-mono font-bold">£50k</span>
+                      <span className="text-[10px] text-slate-500 font-mono font-bold">£5k</span>
                     </div>
                     <div className="flex justify-between text-[9px] text-slate-500 mt-1">
-                      <span>Minimum Standard Setup: £10,000</span>
-                      <span>Maximum Multi-Site Setup: £50,000</span>
+                      <span>Minimum Standard Setup: £2,000</span>
+                      <span>Maximum Multi-Site Setup: £5,000</span>
                     </div>
                   </div>
                 )}
